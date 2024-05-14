@@ -1,7 +1,7 @@
 //importamos los paquetes de express y mongoose
 const express = require('express')
 const axios = require('axios')
-const token = 'BQDl51_hALAJPpDW0jLn8hVUAMxhqQM1mqopDtg4T0ww8sH78lfVuO3FXyrUu8GlIBt5UnqI_2U40WwVCqPkkYW9zMG0HpIOtZm7avV7y1Fla9D_VJkmW8ZJpFoPfIc91FcDw5fsIoirX05tz1pV9KOr8H5z_DyvXMgSGSEzP8vUNw_9J-PRsFDrKqz0Bc4Sfdd7iQOIbafJdY0VrD9s8nB6xwKcyjXAzFikhvw8ihXVL8dZVLYP8x0ngSqzV4zw'
+const token = 'BQCxH2y-SD3IGifq5V9shyGrpNXJmmkYyQHx0ARfCleEkblQ-sNdROBdl-JpyzZJn7xyF9xXJtUwU4JTyqAui-Lutsd2onjGi2YJ5qdOVY3YZiq0PYEd6nYhNL24PhM_Z2V9-4tgHHMiD6gZc13Tkz-zzAf0fMGcIV6itpJ9ZTgDz-mhptNkCamFx47NA_enhY4H2QMcLMN7dlg8_8csKVOReUgY2cICvkk83JGYaB6NX3e2Cc5vcjaY9mGyqurW'
 
 //creamos la app usando express y router para enrutar las funciones de la aplicacion
 const app = express()
@@ -35,6 +35,29 @@ async function fetchTopTracks(){
     }
 }
 
+async function createPlaylist(){
+    try{
+        const response = await axios.post('https://api.spotify.com/v1/users/aspot30/playlists', {
+            headers : {
+                'Authorization' : `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            data: {
+                "name": "Res Api Playlist",
+                "description": "Playlist creada con Res API ",
+                "public": true
+            }
+        })
+
+        return response.data;
+
+    }catch(error){
+        console.error(error)
+        return{error: error.message}
+    }
+
+}
+
 
 
 //traemos las canciones mas escuchadas
@@ -42,6 +65,11 @@ app.get('/top-albums', async (req, res) => {
     const data = await fetchTopTracks();
     res.json(data)
 });
+
+app.post('/create-playlist', async(req, res) => {
+    const data = await createPlaylist()
+    res.json(data)
+})
 
 
 
