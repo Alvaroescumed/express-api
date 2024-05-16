@@ -11,11 +11,16 @@ const port = 3000
 
 const apiKey = config.apiKey
 
+//Necesitamos realizar este middleware para que se pueda leer el cuerpo de la peticion como json
+app.use(express.json())
+
 //conectamos con la base de datos
 
-mongoose.connect('mongodb://localhost:27017/tutorial')
-    .then(()=> console.log('Conncected succesfully'))
+mongoose.connect('mongodb://localhost:27017/playlist')
+    .then(()=> console.log('DB conncected succesfully'))
     .catch(err => console.log(err))
+
+// desarrollamos las funciones que vamos a usar en la aplicacion
 
 async function fetchTopTracks(){
     try{
@@ -46,6 +51,24 @@ async function fetchTopTracks(){
     }
 }
 
+async function createPlaylist(playlistData){
+    try{
+        
+        //Inicializamos la playlist a crear
+        const newPlaylist = new PlaylistModel(playlistData)
+        //guardamos la playlist en la base de datos
+        await newPlaylist.save() 
+        
+        return newPlaylist
+
+    } catch(error){
+
+        console.error(error)
+        return{error: error.message}
+
+    }
+}
+
 
 
 
@@ -56,10 +79,21 @@ app.get('/recent-tracks', async (req, res) => {
 });
 
 app.post('/create-playlist', async(req, res) => {
-    const data = await createPlaylist()
+    const playlistData = req.body
+    console.log(req.body)
+    const playlist = await createPlaylist(playlistData)
+    res.json(playlist)
+})
+
+app.put('/add-song', async(req, res) => {
+    const data  = await addSong()
     res.json(data)
 })
 
+app.delete('/delete-song', async(req, res) => {
+    const data  = await deleteSong()
+    res.json(data)
+})
 
 
 app.listen( port, () => {
