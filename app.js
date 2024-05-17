@@ -69,7 +69,44 @@ async function createPlaylist(playlistData){
     }
 }
 
+async function addSong(playlistName, song){
+    try{
+        //Buscamos la playlist a la que queremos añadir la cancion
+        const playlist = await PlaylistModel.findOne({ name: playlistName})
 
+        //si esta existe añadimos la cancion y la guardamos, en caso de quen no salta un error
+        if(playlist){
+            playlist.songs.push(song)
+            await playlist.save()
+
+            return playlist
+        } else{
+            return {error: 'Playlist not found'}
+        }
+    } catch(error){
+        console.error(error)
+        return{error: error.message}
+    }
+}
+
+async function deleteSong(playlistName, title){
+    try{
+        //comprobamos que la cancion que queremos borrar se encuentre en la playlist y que esta misma tambien exista
+        const playlist = await PlaylistModel.findOne({ name: playlistName})
+        const songIndex = playlist.songs.findIndex(song => song.title === title)
+
+        if(playlist && songIndex > 0){
+            playlist.songs.splice(songIndex, 1)
+            await playlist.save()
+
+            return playlist
+        }
+
+    }catch(error){
+        console.error(error)
+        return { error: error.message }
+    }
+}
 
 
 //traemos las canciones mas escuchadas
@@ -78,6 +115,7 @@ app.get('/recent-tracks', async (req, res) => {
     res.json(data)
 });
 
+// creamos una playlist vacia tomando como datos el body en la request
 app.post('/create-playlist', async(req, res) => {
     const playlistData = req.body
     console.log(req.body)
@@ -85,14 +123,34 @@ app.post('/create-playlist', async(req, res) => {
     res.json(playlist)
 })
 
+//añadimos canciones a la playlist
 app.put('/add-song', async(req, res) => {
-    const data  = await addSong()
-    res.json(data)
+    const {playlistName, title}  = req.body
+
+    //traemos las canciones de la api
+    const allSongs = await fetchTopTracks()
+
+    // comprobamos que el nombre de la cancion que queremos añadir este en el resultado de la request de la API
+    const song = allSongs.find(song => song.title === title)
+
+    // creamos un condicional de que si existe la cancion la añada, sino que salte un error
+    if(song){
+        const updatePlaylist = await addSong(playlistName, song)
+        res.json(updatePlaylist)
+    } else{
+        return {error: 'La cancion no es valida'}
+    }
+    
 })
 
+//borramos una cancion de la playlist
 app.delete('/delete-song', async(req, res) => {
-    const data  = await deleteSong()
-    res.json(data)
+    const {playlistName, title}  = req.body
+
+    const updatedPlaylist = await deleteSong(playlistName, title)
+
+    res.json(updatedPlaylist)
+
 })
 
 
