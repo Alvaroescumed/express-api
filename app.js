@@ -95,7 +95,7 @@ async function deleteSong(playlistName, title){
         const playlist = await PlaylistModel.findOne({ name: playlistName})
         const songIndex = playlist.songs.findIndex(song => song.title === title)
 
-        if(playlist && songIndex > 0){
+        if(playlist && songIndex >= 0){
             playlist.songs.splice(songIndex, 1)
             await playlist.save()
 
